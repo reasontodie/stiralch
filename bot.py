@@ -2,7 +2,7 @@
 import telebot
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
-bot_token = '6212627078:AAHIgEimx9cpmazk5XirSfCopJQa__jZ5gQ'
+bot_token = 'TOKEN'
 bot = telebot.TeleBot(bot_token)
 
 # Список пользователей, которые записались на стирку
