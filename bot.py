@@ -43,65 +43,6 @@ def delete_user_command(message):
     else:
         bot.reply_to(message, "Извините, вы не являетесь администратором.")
 
-# Функция удаления пользователя из очереди
-def process_delete_user(message):
-    try:
-        user_index = int(message.text) - 1
-        if user_index >= 0 and user_index < len(queue):
-            user_id = queue.pop(user_index)
-            active_users.pop(user_id, None)
-            bot.reply_to(message, f"Пользователь @{bot.get_chat_member(message.chat.id, user_id).user.username} успешно удален из очереди.")
-            update_queue()
-        else:
-            bot.reply_to(message, f"Некорректный номер пользователя в очереди.")
-    except ValueError:
-        bot.reply_to(message, f"Некорректный номер пользователя в очереди.")
-
-# Обработчик кнопки 'Переместить пользователя'
-@bot.message_handler(func=lambda message: message.text == 'Переместить пользователя')
-def move_user_command(message):
-    if message.chat.id in admins:
-        bot.reply_to(message, "Введите номер пользователя в очереди, которого необходимо переместить:")
-        bot.register_next_step_handler(message, process_move_user)
-    else:
-        bot.reply_to(message, "Извините, вы не являетесь администратором.")
-
-# Функция перемещения пользователя в очереди
-def process_move_user(message):
-    try:
-        user_index = int(message.text) - 1
-        if user_index >= 0 and user_index < len(queue):
-            bot.reply_to(message, f"Введите новую позицию для пользователя @{bot.get_chat_member(message.chat.id, queue[user_index]).user.username}:")
-            bot.register_next_step_handler(message, lambda m: process_new_position(m, queue[user_index]))
-        else:
-            bot.reply_to(message, f"Некорректный номер пользователя в очереди.")
-    except ValueError:
-        bot.reply_to(message, f"Некорректный номер пользователя в очереди.")
-
-# Функция обработки новой позиции для пользователя
-def process_new_position(message, user_id):
-    try:
-        new_index = int(message.text) - 1
-        if new_index >= 0 and new_index <= len(queue):
-            queue.remove(user_id)
-            queue.insert(new_index, user_id)
-            bot.reply_to(message, f"Пользователь @{bot.get_chat_member(message.chat.id, user_id).user.username} перемещен в позицию {new_index+1}.")
-            update_queue()
-        else:
-            bot.reply_to(message, f"Некорректная позиция.")
-    except ValueError:
-        bot.reply_to(message, f"Некорректная позиция.")
-
-@bot.callback_query_handler(func=lambda call: call.data.startswith('move_user'))
-def move_user_callback(call):
-    user_id = int(call.data.split()[1])
-    if user_id in queue:
-        bot.answer_callback_query(call.id, text="Введите новую позицию для пользователя.")
-        bot.send_message(call.message.chat.id, f"Введите новую позицию для пользователя @{bot.get_chat_member(call.message.chat.id, user_id).user.username}:")
-        bot.register_next_step_handler(call.message, lambda m: process_new_position(m, user_id))
-    else:
-        bot.answer_callback_query(call.id, text="Пользователь не найден в очереди.")
-
 #Админская очередь
 @bot.message_handler(func=lambda message: message.text == 'Own очередь' and message.chat.id in admins)
 def own_view_queue_command(message):
